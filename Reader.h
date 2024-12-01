@@ -24,6 +24,9 @@ public:
     static std::vector<std::string> tokenize(std::string input);
     static Value* read_str(std::string input);
     static Value* read_form(Reader& reader);
-    static Value* read_list(Reader& reader);
+    static ListValue* read_list(Reader& reader);
+    static VectorValue* read_vector(Reader& reader);
     static Value* read_atom(Reader& reader);
+    static Value* read_quote(Reader& reader);
+    static HashMapValue* read_hash_map(Reader& reader);
 };

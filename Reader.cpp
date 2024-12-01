@@ -47,23 +47,121 @@ Value* Reader::read_form(Reader& reader) {
     switch (token.value()[0]) {
         case '(':
             return read_list(reader);
+        case '[':
+            return read_vector(reader);
+        case '{':
+            return read_hash_map(reader);
+        case '\'':
+            return read_quote(reader);
+        case '`':
+            return read_quote(reader);
+        case '~':
+            return read_quote(reader);
+
+        case '@':
+            return read_quote(reader);
         default:
             return read_atom(reader);
     }
 }
 
-Value* Reader::read_list(Reader& reader) {
+ListValue* Reader::read_list(Reader& reader) {
     reader.next();
     auto* list = new ListValue();
     while (auto token = reader.peek()) {
         if (*token == ")") {
             reader.next();
-            break;
+            return list;
         }
         list->push(read_form(reader));
     }
+    std::cerr<<"EOF\n";
     return list;
 }
+
+VectorValue* Reader::read_vector(Reader& reader) {
+    reader.next();
+    auto* list = new VectorValue();
+    while (auto token = reader.peek()) {
+        if (*token == "]") {
+            reader.next();
+            return list;
+        }
+        list->push(read_form(reader));
+    }
+    std::cerr<<"EOF\n";
+    return list;
+}
+HashMapValue* Reader::read_hash_map(Reader& reader) {
+    reader.next();
+    auto* map = new HashMapValue();
+    while (auto token = reader.peek()) {
+        if (*token == "}") {
+            reader.next();
+            return map;
+        }
+        auto key = read_form(reader);
+        token = reader.peek();
+        if (*token == "}") {
+            std::cerr << "Hash key without value\n";
+            reader.next();
+            return map;
+        }
+        auto val = read_form(reader);
+        map->set(key, val);
+    }
+    std::cerr<<"EOF\n";
+    return map;
+}
+Value* Reader::read_quote(Reader& reader) 
+{
+    auto token = reader.peek();
+    auto* list = new ListValue();
+    switch(token.value()[0])
+    {
+        case '\'' :
+            reader.next();
+            list = new ListValue();
+            list->push(new SymbolValue("quote"));
+            list->push(read_form(reader));
+            return list;
+        case '`' :
+            reader.next();
+            list = new ListValue();
+            list->push(new SymbolValue("quasiquote"));
+            list->push(read_form(reader));
+            return list;
+        case '~' :
+            if (token.value().length() > 1 && token.value()[1] == '@') 
+            {
+                reader.next();
+                list = new ListValue();
+                list->push(new SymbolValue("splice-unquote"));
+                list->push(read_form(reader));
+                return list;
+            }
+            else 
+            {
+                reader.next();
+                list = new ListValue();
+                list->push(new SymbolValue("unquote"));
+                list->push(read_form(reader));
+                return list;
+            }
+        case '@' :
+            reader.next();
+            list = new ListValue();
+            list->push(new SymbolValue("deref"));
+            list->push(read_form(reader));
+            return list;
+        default:
+            std::cerr << "Not standard quote!\n";
+            return nullptr;
+            abort();
+    }
+
+}
+
 
 Value* Reader::read_atom(Reader& reader) {
     return new SymbolValue(*reader.next());
