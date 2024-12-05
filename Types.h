@@ -28,8 +28,9 @@ public:
         Exception,
     };
     virtual ~Value() = default;
-    virtual std::string inspect(); // Defined in types.cpp
-    virtual Type type() { assert(0); }
+    virtual std::string inspect() = 0; // Defined in types.cpp
+    virtual bool is_symbol() {return false; };
+    virtual Type type() = 0;
     ListValue *as_list();
     VectorValue *as_vector();
     HashMapValue *as_hash_map();
@@ -102,10 +103,12 @@ class SymbolValue : public Value
 public:
     explicit SymbolValue(std::string symbol);
 
+    bool matches(char *nstr) {return symbol == nstr;}
+
     std::string str();
     std::string inspect() override;
     virtual Type type() { return Type::Symbol; }
-
+    virtual bool is_symbol() override {return true;}
 private:
     std::string symbol;
 };

@@ -2,8 +2,8 @@
 #include <string>
 #include "Reader.h"
 #include "Printer.h"
+#include "env.h"
 
-using Env = std::unordered_map<SymbolValue *, Value *, HashMapHash, HashMapPred>;
 Value *READ(std::string input)
 {
     return Reader::read_str(input);
@@ -25,12 +25,7 @@ Value *eval_ast(Value *ast, Env &env)
     {
     case Value::Type::Symbol:
     {
-        auto search = env.find(ast->as_symbol());
-        if (search == env.end())
-        {
-            throw new ExceptionValue{ast->as_symbol()->str() + " not found"};
-        }
-        return search->second;
+        return env.get(ast->as_symbol());
     }
     case Value::Type::List:
     {
@@ -76,14 +71,33 @@ Value *EVAL(Value *input, Env &env)
     }
     else
     {
-        auto list = eval_ast(input, env)->as_list();
-        auto fn = list->at(0)->as_fn()->to_fn();
-        Value *args[list->size() - 1];
-        for (size_t i = 1; i < list->size(); i++)
-        {
-            args[i - 1] = list->at(i);
+        auto list = input->as_list();
+        auto first = list->at(0);
+        if(first->is_symbol() && first->as_symbol()->matches("def!")) {
+            auto key = list->at(1)->as_symbol();
+            auto val = EVAL(list->at(2), env);
+            env.set(key, val);
+            return val;
+        } else if(first->is_symbol() && first->as_symbol()->matches("let*")) {
+            auto new_env = new Env {&env};
+            auto bindings = list->at(1)->as_list();
+            for(size_t i=0; i<bindings->size(); i+=2){
+                auto key = bindings->at(i)->as_symbol();
+                assert(i<bindings->size());
+                auto val = EVAL(bindings->at(i+1), *new_env);
+                new_env->set(key, val);
+            }
+            return EVAL(list->at(2), *new_env);
+        } else {
+            auto list = eval_ast(input, env)->as_list();
+            auto fn = list->at(0)->as_fn()->to_fn();
+            Value *args[list->size() - 1];
+            for (size_t i = 1; i < list->size(); i++)
+            {
+                args[i - 1] = list->at(i);
+            }
+            return fn(list->size() - 1, args);
         }
-        return fn(list->size() - 1, args);
     }
 }
 
@@ -158,18 +172,19 @@ Value *mul(size_t argc, Value **args)
 }
 int main()
 {
-    Env env{};
-    env[new SymbolValue("+")] = new FnValue{add};
-    env[new SymbolValue("-")] = new FnValue{sub};
-    env[new SymbolValue("*")] = new FnValue{mul};
-    env[new SymbolValue("/")] = new FnValue{div};
+    auto env = new Env {nullptr};
+
+    env->set(new SymbolValue("+"), new FnValue{add});
+    env->set(new SymbolValue("-"), new FnValue{sub});
+    env->set(new SymbolValue("*"), new FnValue{mul});
+    env->set(new SymbolValue("/"), new FnValue{div});
     std::string input;
 
     while (1)
     {
         std::cout << "user (CTRL + C to exit)> ";
         std::getline(std::cin, input);
-        std::cout << rep(input, env) << std::endl;
+        std::cout << rep(input, *env) << std::endl;
     }
     return 0;
 }

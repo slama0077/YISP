@@ -3,7 +3,7 @@
 
 ListValue *Value::as_list()
 {
-    assert(type() == Type::List);
+    assert(type() == Type::List || type() == Type::Vector);
     return static_cast<ListValue *>(this);
 }
 VectorValue *Value::as_vector()
