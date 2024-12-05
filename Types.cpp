@@ -96,7 +96,7 @@ HashMapValue::HashMapValue() {}
 
 std::string HashMapValue::inspect()
 {
-    std::string out = "{";
+    std::string out = "{ ";
     for (auto value : map)
     {
         out.append(value.first->inspect());
