@@ -8,7 +8,7 @@ CXX = g++
 CXXFLAGS = -std=c++17 -Wall
 
 # Source files (ensure these match the actual filenames)
-SRCS = main.cpp Reader.cpp Tokenizer.cpp Types.cpp
+SRCS = main.cpp Reader.cpp Tokenizer.cpp Types.cpp core.cpp printer.cpp
 
 # Object files (same as source files but with .o extension)
 OBJS = $(SRCS:.cpp=.o)
@@ -18,7 +18,7 @@ all: $(TARGET)
 
 # Link the object files to create the final executable
 $(TARGET): $(OBJS)
-	$(CXX) $(CXXFLAGS) -o $(TARGET) $(OBJS)
+	$(CXX) $(CXXFLAGS) -o $(TARGET) $(OBJS) -g
 
 # Compile each .cpp file into a .o file
 %.o: %.cpp

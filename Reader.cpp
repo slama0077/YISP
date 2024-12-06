@@ -48,12 +48,13 @@ Value *Reader::read_str(std::string input)
 
 Value *Reader::read_form(Reader &reader)
 {
-    auto token = reader.peek();
-    if (!token)
+    auto maybe_token = reader.peek();
+    if (!maybe_token)
     {
         return nullptr;
     }
-    switch (token.value()[0])
+    auto token = maybe_token.value();
+    switch (token[0])
     {
     case '(':
         return read_list(reader);
@@ -86,6 +87,16 @@ Value *Reader::read_form(Reader &reader)
     case '9':
         return read_integer(reader);
     default:
+        if(token == "true") {
+            reader.next();
+            return new TrueValue {};
+        } else if (token == "false") {
+            reader.next();
+            return new FalseValue {};
+        } else if (token == "nil") {
+            reader.next();
+            return new NillValue {};
+        }
         return read_atom(reader);
     }
 }

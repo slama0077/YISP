@@ -6,6 +6,21 @@ ListValue *Value::as_list()
     assert(type() == Type::List || type() == Type::Vector);
     return static_cast<ListValue *>(this);
 }
+bool ListValue::operator==(Value *other) {
+    if(type() != other->type()){
+        return false;
+    }
+    if(size() != other->as_list()->size()){
+        return false;
+    }
+    auto other_list = other->as_list();
+    for(size_t i=0; i<size(); i++){
+        if(!(*at(i) == other_list->at(i))) {
+            return false;
+        }
+    }
+    return true;
+}
 VectorValue *Value::as_vector()
 {
     assert(type() == Type::Vector);
@@ -36,6 +51,24 @@ ExceptionValue *Value::as_exception()
     assert(type() == Type::Exception);
     return static_cast<ExceptionValue *>(this);
 }
+
+TrueValue *Value::as_true()
+{
+    assert(type() == Type::True);
+    return static_cast<TrueValue *>(this);
+}
+FalseValue *Value::as_false()
+{
+    assert(type() == Type::False);
+    return static_cast<FalseValue *>(this);
+}
+
+NillValue *Value::as_nill()
+{
+    assert(type() == Type::Nill);
+    return static_cast<NillValue *>(this);
+}
+
 
 // Value class implementation
 std::string Value::inspect()

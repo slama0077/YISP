@@ -6,6 +6,14 @@
 class Env {
     public:
         Env(Env* outer) : m_outer(outer){}
+        Env(Env *outer, ListValue *binds, ListValue *exprs) : m_outer(outer) {
+            assert(binds->size() == exprs->size());
+            for(size_t i =0; i<binds->size(); i++){
+                auto key = binds->at(i)->as_symbol();
+                auto val = exprs->at(i);
+                set(key, val);
+            }
+        }
         void set(SymbolValue *key, Value *val){
             m_data[key] = val;
         }

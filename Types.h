@@ -5,6 +5,7 @@
 #include <vector>
 #include <cassert>
 #include <unordered_map>
+#include <functional>
 
 class ListValue;
 class VectorValue;
@@ -13,6 +14,9 @@ class SymbolValue;
 class IntegerValue;
 class FnValue;
 class ExceptionValue;
+class TrueValue;
+class FalseValue;
+class NillValue;
 
 class Value
 {
@@ -26,10 +30,18 @@ public:
         Integer,
         Fn,
         Exception,
+        True,
+        False,
+        Nill,
     };
     virtual ~Value() = default;
     virtual std::string inspect() = 0; // Defined in types.cpp
     virtual bool is_symbol() {return false; };
+    virtual bool is_truthy() {return true; };
+    virtual bool is_list() {return false; };
+    virtual bool is_listy() {return false;}
+    virtual bool is_integer() {return false;}
+    virtual bool operator==(Value *) { return false; };
     virtual Type type() = 0;
     ListValue *as_list();
     VectorValue *as_vector();
@@ -38,6 +50,9 @@ public:
     IntegerValue *as_integer();
     FnValue *as_fn();
     ExceptionValue *as_exception();
+    TrueValue *as_true();
+    FalseValue *as_false();
+    NillValue *as_nill();
 };
 
 struct HashMapHash
@@ -62,8 +77,10 @@ public:
     ListValue();
 
     void push(Value *value);
+    virtual bool operator==(Value *) override;
     std::string inspect() override;
     virtual Type type() { return Type::List; }
+    virtual bool is_list() override {return true;};
     auto begin() { return listValue.begin(); }
     auto end() { return listValue.end(); }
     bool is_empty() { return listValue.size() == 0; }
@@ -80,6 +97,7 @@ class VectorValue : public ListValue
 public:
     VectorValue();
     std::string inspect() override;
+    virtual bool is_listy() override {return true;}
     virtual Type type() { return Type::Vector; }
 };
 
@@ -113,7 +131,7 @@ private:
     std::string symbol;
 };
 
-using FnPtr = Value *(*)(size_t, Value **);
+using Function = std::function<Value *(size_t, Value **)>;
 
 class IntegerValue : public Value
 {
@@ -125,6 +143,10 @@ public:
     {
         return std::to_string(m_long);
     }
+    virtual bool is_integer() {return true;}
+    bool operator==(Value *other) override {
+        return other->is_integer() && other->as_integer()->m_long == m_long;
+    }
     long to_long() { return m_long; }
     virtual Type type() { return Type::Integer; }
 
@@ -135,17 +157,17 @@ private:
 class FnValue : public Value
 {
 public:
-    FnValue(FnPtr fn)
+    FnValue(Function fn)
         : m_fn{fn} {}
     virtual std::string inspect()
     {
         return "<fn>";
     }
-    FnPtr to_fn() { return m_fn; }
+    Function to_fn() { return m_fn; }
     virtual Type type() { return Type::Fn; }
 
 private:
-    FnPtr m_fn{nullptr};
+    Function m_fn{nullptr};
 };
 
 class ExceptionValue : public Value
@@ -163,4 +185,25 @@ public:
 
 private:
     std::string m_message;
+};
+
+class TrueValue : public Value {
+    public:
+        virtual Type type() override { return Type::True; }
+        virtual std::string inspect() override { return "true"; }
+};
+
+class FalseValue : public Value {
+    public:
+        virtual Type type() override { return Type::False; }
+        virtual std::string inspect() override { return "false"; }
+        virtual bool is_truthy() override {return false; };
+};
+
+class NillValue : public Value {
+    public:
+        virtual Type type() override { return Type::Nill; }
+        virtual std::string inspect() override { return "nill"; }
+        virtual bool is_truthy() override {return false; };
+
 };
