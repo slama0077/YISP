@@ -82,7 +82,7 @@ Value *prn(size_t argc, Value **args)
     if (argc == 0)
     {
         std::cout << "\n";
-        return new NillValue;
+        return NillValue::the();
     }
     else {
         assert(argc >= 1);
@@ -96,7 +96,7 @@ Value *prn(size_t argc, Value **args)
        }
         std::cout << std::endl;
     }
-    return new NillValue;
+    return NillValue::the();
 }
 Value *list(size_t argc, Value **args){
     auto l = new ListValue {};
@@ -109,17 +109,17 @@ Value *list(size_t argc, Value **args){
 Value *list_q(size_t argc, Value **args){
     assert(argc >= 1);
     if(args[0]->is_list()) {
-        return new TrueValue;
+        return TrueValue::the();
     } else {
-        return new FalseValue;
+        return FalseValue::the();
     }
 }
 Value *empty_q(size_t argc, Value **args){
     assert(argc >= 1);
     if(args[0]->is_listy() && args[0]->as_list()->is_empty()) {
-        return new TrueValue;
+        return TrueValue::the();
     } else {
-        return new FalseValue;
+        return FalseValue::the();
     }
  
 }
@@ -135,9 +135,9 @@ Value *eq(size_t argc, Value **args){
     auto a = args[0];
     auto b = args[1];
     if(*a == b){
-        return new TrueValue;
+        return TrueValue::the();
     }
-    return new FalseValue;
+    return FalseValue::the();
 
 }
 Value *lt(size_t argc, Value **args){
@@ -147,9 +147,9 @@ Value *lt(size_t argc, Value **args){
     assert(a->is_integer());
     assert(b->is_integer());
     if(a->as_integer()->to_long() < b->as_integer()->to_long()){
-        return new TrueValue;
+        return TrueValue::the();
     }
-    return new FalseValue;
+    return FalseValue::the();
 }
 Value *lte(size_t argc, Value **args){
     assert(argc >= 2);
@@ -158,9 +158,9 @@ Value *lte(size_t argc, Value **args){
     assert(a->is_integer());
     assert(b->is_integer());
     if(a->as_integer()->to_long() <= b->as_integer()->to_long()){
-        return new TrueValue;
+        return TrueValue::the();
     }
-    return new FalseValue;
+    return FalseValue::the();
 }
 Value *gt(size_t argc, Value **args){
     assert(argc >= 2);
@@ -169,9 +169,9 @@ Value *gt(size_t argc, Value **args){
     assert(a->is_integer());
     assert(b->is_integer());
     if(a->as_integer()->to_long() > b->as_integer()->to_long()){
-        return new TrueValue;
+        return TrueValue::the();
     }
-    return new FalseValue;
+    return FalseValue::the();
 }
 Value *gte(size_t argc, Value **args){
     assert(argc >= 2);
@@ -180,17 +180,17 @@ Value *gte(size_t argc, Value **args){
     assert(a->is_integer());
     assert(b->is_integer());
     if(a->as_integer()->to_long() >= b->as_integer()->to_long()){
-        return new TrueValue;
+        return TrueValue::the();
     }
-    return new FalseValue;
+    return FalseValue::the();
 }
 
 Value *not_funcn(size_t argc, Value **args)
 {
     assert(argc >= 2);
     if(args[0]->is_truthy())
-        return new FalseValue;
-    return new TrueValue;
+        return FalseValue::the();
+    return TrueValue::the();
 }
 
 Value *pr_str_funcn(size_t argc, Value **args)
@@ -220,7 +220,7 @@ Value *str(size_t argc, Value **args)
     if (argc == 0)
     {
         std::cout << "\n";
-        return new NillValue;
+        return NillValue::the();
     }
     else 
     {        
@@ -251,5 +251,5 @@ Value *println(size_t argc, Value **args)
        }
        std::cout << str << "\n";
     }
-    return new NillValue;
+    return NillValue::the();
 }

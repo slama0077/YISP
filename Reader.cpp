@@ -72,7 +72,7 @@ Value *Reader::read_form(Reader &reader)
     case '@':
         return read_quote(reader);
     case '-':
-        if (reader.peek().value().length() == 1)
+        if (token.length() == 1 || !isdigit(token[1]))
             return read_atom(reader);
         return read_integer(reader);
     case '0':
@@ -90,15 +90,15 @@ Value *Reader::read_form(Reader &reader)
         assert(token.size() >= 1);
         if(token == "true") {
             reader.next();
-            return new TrueValue {};
+            return TrueValue::the();
         } 
         else if (token == "false") {
             reader.next();
-            return new FalseValue {};
+            return FalseValue::the();
         } 
         else if (token == "nil") {
             reader.next();
-            return new NillValue {};
+            return NillValue::the();
         }
         else if (token[0] == '"')
         {
@@ -117,6 +117,10 @@ Value *Reader::read_form(Reader &reader)
 Value* Reader::read_string(Reader& reader)
 {
     auto token = reader.next().value();
+    if (token.size() < 2)
+    {
+        throw new ExceptionValue { "end of input" };
+    }
     assert(token.size() >=  2);
     if (token.size() == 2)
     {
@@ -134,7 +138,10 @@ Value* Reader::read_string(Reader& reader)
                 break;
 
             case '\\':  // Handle the case where c is a backslash
-                assert(++i < str.size());
+                if (++i >= str.size())
+                {
+                    throw new ExceptionValue { "unbalanced quote" };
+                }
                 c = str[i];
                 switch (c)
                 {
@@ -153,7 +160,7 @@ Value* Reader::read_string(Reader& reader)
         }
 
     }
-    return new StringValue { processed_string };   //very questionable
+    return new StringValue { processed_string };  
 }
 
 

@@ -253,6 +253,7 @@ class TrueValue : public Value {
         }
 
     private:
+    TrueValue() { }
     static inline TrueValue *s_instance { nullptr };
 };
 
@@ -279,6 +280,7 @@ class FalseValue : public Value {
         virtual bool is_truthy() override {return false; };
     
     private:
+    FalseValue() { }
     static inline FalseValue *s_instance { nullptr };
 };
 
@@ -305,6 +307,7 @@ class NillValue : public Value {
         virtual bool is_truthy() override {return false; };
 
     private:
+    NillValue() { }
     static inline NillValue *s_instance { nullptr };
 };
 

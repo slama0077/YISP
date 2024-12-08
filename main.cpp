@@ -101,7 +101,7 @@ Value *EVAL(Value *input, Env &env)
             } else if(special->matches("if")) {
                 auto condition = list->at(1);
                 auto true_expr = list->at(2);
-                auto false_expr = list->size() >= 4 ? list->at(3) : new NillValue;
+                auto false_expr = list->size() >= 4 ? list->at(3) : NillValue::the();
                 if (EVAL(condition, env)->is_truthy()) return EVAL(true_expr, env);
                 else return EVAL(false_expr, env);
             } else if(special->matches("fn*")) 
@@ -116,7 +116,7 @@ Value *EVAL(Value *input, Env &env)
                     }
                     auto fn_env = new Env { env_ptr, binds, exprs };
                     return EVAL(body, *fn_env);
-                    // return new NillValue {};
+                    // return NillValue::the() {};
                 };
                 return new FnValue {closure};
             }
