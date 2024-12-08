@@ -21,3 +21,7 @@ Value *lt(size_t argc, Value **args);
 Value *lte(size_t argc, Value **args);
 Value *gt(size_t argc, Value **args);
 Value *gte(size_t argc, Value **args);
+Value *not_funcn(size_t argc, Value **args);
+Value *pr_str_funcn(size_t argc, Value **args);
+Value *str (size_t argc, Value **args);
+Value *println(size_t argc, Value **args);

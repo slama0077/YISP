@@ -87,19 +87,75 @@ Value *Reader::read_form(Reader &reader)
     case '9':
         return read_integer(reader);
     default:
+        assert(token.size() >= 1);
         if(token == "true") {
             reader.next();
             return new TrueValue {};
-        } else if (token == "false") {
+        } 
+        else if (token == "false") {
             reader.next();
             return new FalseValue {};
-        } else if (token == "nil") {
+        } 
+        else if (token == "nil") {
             reader.next();
             return new NillValue {};
         }
+        else if (token[0] == '"')
+        {
+            return read_string(reader);
+        }
+        else if(token[0] == ':')
+        {
+            reader.next();
+            return new KeywordValue { token };
+        }
+
         return read_atom(reader);
     }
 }
+
+Value* Reader::read_string(Reader& reader)
+{
+    auto token = reader.next().value();
+    assert(token.size() >=  2);
+    if (token.size() == 2)
+    {
+        return new StringValue { "" };
+    }
+    auto str = token.substr(1, token.size() - 2);
+    std::string processed_string = "";
+    for (size_t i = 0; i < str.size(); i++)
+    {
+        auto c = str[i];
+        switch (c) 
+        {
+            case '"':  // Handle the case where c is a double-quote
+                processed_string += c;
+                break;
+
+            case '\\':  // Handle the case where c is a backslash
+                assert(++i < str.size());
+                c = str[i];
+                switch (c)
+                {
+                    case 'n':
+                    processed_string += '\n';
+                    break;
+
+                    default:
+                    processed_string += c;
+                }
+                break;
+
+            default:  // Handle all other cases
+                processed_string += c;
+                break;
+        }
+
+    }
+    return new StringValue { processed_string };   //very questionable
+}
+
 
 ListValue *Reader::
     read_list(Reader &reader)

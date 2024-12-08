@@ -19,6 +19,10 @@ std::unordered_map<std::string, Function> build_namespace() {
     ns["<="] = lte;
     ns[">"] = gt;
     ns[">="] = gte;
+    ns["not"] = not_funcn;
+    ns["pr-str"] = pr_str_funcn;
+    ns["str"] = str;
+    ns["println"] = println;
     return ns;
 
 }
@@ -73,9 +77,25 @@ Value *multiply(size_t argc, Value **args)
     return new IntegerValue{result};
 }
 
-Value *prn(size_t argc, Value **args){
-    assert(argc >= 1);
-    std::cout << pr_str(args[0]) << "\n";
+Value *prn(size_t argc, Value **args)
+{
+    if (argc == 0)
+    {
+        std::cout << "\n";
+        return new NillValue;
+    }
+    else {
+        assert(argc >= 1);
+        for (size_t i = 0; i < argc; i++)
+       {
+        std::cout << pr_str(args[i], true);
+        if (i < argc - 1)
+            {
+                std::cout << ' ';
+            }
+       }
+        std::cout << std::endl;
+    }
     return new NillValue;
 }
 Value *list(size_t argc, Value **args){
@@ -96,7 +116,7 @@ Value *list_q(size_t argc, Value **args){
 }
 Value *empty_q(size_t argc, Value **args){
     assert(argc >= 1);
-    if(args[0]->is_list() && args[0]->as_list()->is_empty()) {
+    if(args[0]->is_listy() && args[0]->as_list()->is_empty()) {
         return new TrueValue;
     } else {
         return new FalseValue;
@@ -105,7 +125,7 @@ Value *empty_q(size_t argc, Value **args){
 }
 Value *count(size_t argc, Value **args){
     assert(argc >= 1);
-    if(args[0]->is_list()){
+    if(args[0]->is_listy()){
         return new IntegerValue {static_cast<long>(args[0]->as_list()->size()) };
     }
     return new IntegerValue { 0 };
@@ -163,4 +183,73 @@ Value *gte(size_t argc, Value **args){
         return new TrueValue;
     }
     return new FalseValue;
+}
+
+Value *not_funcn(size_t argc, Value **args)
+{
+    assert(argc >= 2);
+    if(args[0]->is_truthy())
+        return new FalseValue;
+    return new TrueValue;
+}
+
+Value *pr_str_funcn(size_t argc, Value **args)
+{
+    std::string str = "";
+    if (argc == 0)
+    {
+        return new StringValue { str };
+    }
+    else 
+    {        
+       for (size_t i = 0; i < argc; i++)
+       {
+            str += pr_str(args[i], true);
+            if (i < argc - 1)
+            {
+                str += ' ';
+            }
+       }
+    }
+    return new StringValue { str };
+}
+
+Value *str(size_t argc, Value **args)
+{
+    std::string str = "";
+    if (argc == 0)
+    {
+        std::cout << "\n";
+        return new NillValue;
+    }
+    else 
+    {        
+       for (size_t i = 0; i < argc; i++)
+       {
+        str += pr_str(args[i], false);
+       }
+    }
+    return new StringValue { str };
+}
+
+Value *println(size_t argc, Value **args)
+{
+    std::string str = "";
+    if (argc == 0)
+    {
+        return new StringValue { str };
+    }
+    else 
+    {        
+       for (size_t i = 0; i < argc; i++)
+       {
+            str += pr_str(args[i], false);
+            if (i < argc - 1)
+            {
+                str += ' ';
+            }
+       }
+       std::cout << str << "\n";
+    }
+    return new NillValue;
 }

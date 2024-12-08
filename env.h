@@ -6,13 +6,10 @@
 class Env {
     public:
         Env(Env* outer) : m_outer(outer){}
-        Env(Env *outer, ListValue *binds, ListValue *exprs) : m_outer(outer) {
-            assert(binds->size() == exprs->size());
-            for(size_t i =0; i<binds->size(); i++){
-                auto key = binds->at(i)->as_symbol();
-                auto val = exprs->at(i);
-                set(key, val);
-            }
+        Env(Env *outer, ListValue *binds, ListValue *exprs) 
+        : m_outer(outer) 
+        {
+            set_binds(binds, exprs);
         }
         void set(SymbolValue *key, Value *val){
             m_data[key] = val;
@@ -35,6 +32,39 @@ class Env {
             }
         }
     private:
-        Env *m_outer {nullptr};
-        std::unordered_map<SymbolValue *, Value *, HashMapHash, HashMapPred> m_data;
+    void set_binds(ListValue* binds, ListValue* exprs)
+    {
+       for(std:: size_t i =0; i<binds->size(); i++)
+       {
+            auto key = binds->at(i)->as_symbol();
+            if (key->matches("&"))
+            {
+                if (i + 1 >= binds->size())
+                {
+                    throw new ExceptionValue { "Missing symbol after &" };
+                }
+                auto key = binds->at(i+ 1)->as_symbol();
+                set_binds_rest(key, exprs, i);
+                return;
+            }
+            if (i >= exprs->size())
+            {
+                throw new ExceptionValue { "not enough arguments" };
+            }
+            auto val = exprs->at(i);
+            set(key, val);
+        }
+    }
+    void set_binds_rest(SymbolValue* key, ListValue* exprs, std::size_t starting_index)
+    {
+
+        auto vals = new ListValue;
+        for (std::size_t j = starting_index; j < exprs->size(); j++)
+        {
+            vals->push(exprs->at(j));
+        }
+        set(key, vals);
+    }
+    Env *m_outer {nullptr};
+    std::unordered_map<SymbolValue *, Value *, HashMapHash, HashMapPred> m_data;
 };

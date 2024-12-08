@@ -7,7 +7,7 @@ ListValue *Value::as_list()
     return static_cast<ListValue *>(this);
 }
 bool ListValue::operator==(Value *other) {
-    if(type() != other->type()){
+    if(!other->is_listy()){
         return false;
     }
     if(size() != other->as_list()->size()){
@@ -69,9 +69,85 @@ NillValue *Value::as_nill()
     return static_cast<NillValue *>(this);
 }
 
+StringValue *Value::as_string()
+{
+    assert(type() == Type::String);
+    return static_cast<StringValue *>(this);
+}
+
+KeywordValue *Value::as_keyword()
+{
+    assert(type() == Type::Keyword);
+    return static_cast<KeywordValue *>(this);
+}
+
+// const ListValue *Value::as_list() const
+// {
+//     assert(type() == Type::List || type() == Type::Vector);
+//     return static_cast<const ListValue *>(this);
+// }
+// const VectorValue *Value::as_vector() const
+// {
+//     assert(type() == Type::Vector);
+//     return static_cast<const VectorValue *>(this);
+// }
+// const HashMapValue *Value::as_hash_map() const
+// {
+//     assert(type() == Type::HashMap);
+//     return static_cast<const HashMapValue *>(this);
+// }
+// const SymbolValue *Value::as_symbol() const
+// {
+//     assert(type() == Type::Symbol);
+//     return static_cast<const SymbolValue *>(this);
+// }
+// const IntegerValue *Value::as_integer() const
+// {
+//     assert(type() == Type::Integer);
+//     return static_cast<const IntegerValue *>(this);
+// }
+// const FnValue *Value::as_fn() const
+// {
+//     assert(type() == Type::Fn);
+//     return static_cast<const FnValue *>(this);
+// }
+// const ExceptionValue *Value::as_exception() const
+// {
+//     assert(type() == Type::Exception);
+//     return static_cast<const ExceptionValue *>(this);
+// }
+
+// const TrueValue *Value::as_true() const
+// {
+//     assert(type() == Type::True);
+//     return static_cast<const TrueValue *>(this);
+// }
+// const FalseValue *Value::as_false() const
+// {
+//     assert(type() == Type::False);
+//     return static_cast<const FalseValue *>(this);
+// }
+
+// const NillValue *Value::as_nill() const
+// {
+//     assert(type() == Type::Nill);
+//     return static_cast<const NillValue *>(this);
+// }
+
+// const StringValue *Value::as_string() const
+// {
+//     assert(type() == Type::String);
+//     return static_cast<const StringValue *>(this);
+// }
+
+// const KeywordValue *Value::as_keyword() const
+// {
+//     assert(type() == Type::Keyword);
+//     return static_cast<const KeywordValue *>(this);
+// }
 
 // Value class implementation
-std::string Value::inspect()
+std::string Value::inspect(bool print_readably)
 {
     assert(0); // This is a pure virtual-like behavior
     return "";
@@ -85,12 +161,12 @@ void ListValue::push(Value *value)
     listValue.push_back(value);
 }
 
-std::string ListValue::inspect()
+std::string ListValue::inspect(bool print_readably)
 {
     std::string out = "(";
     for (auto *value : listValue)
     {
-        out.append(value->inspect());
+        out.append(value->inspect(print_readably));
         out.append(" ");
     }
     if (!listValue.empty())
@@ -106,12 +182,12 @@ std::string ListValue::inspect()
 
 VectorValue::VectorValue() {}
 
-std::string VectorValue::inspect()
+std::string VectorValue::inspect(bool print_readably)
 {
     std::string out = "[";
     for (auto *value : listValue)
     {
-        out.append(value->inspect());
+        out.append(value->inspect(print_readably));
         out.append(" ");
     }
     if (!listValue.empty())
@@ -127,14 +203,14 @@ std::string VectorValue::inspect()
 
 HashMapValue::HashMapValue() {}
 
-std::string HashMapValue::inspect()
+std::string HashMapValue::inspect(bool print_readably)
 {
     std::string out = "{ ";
     for (auto value : map)
     {
-        out.append(value.first->inspect());
+        out.append(value.first->inspect(print_readably));
         out.append(" ");
-        out.append(value.second->inspect());
+        out.append(value.second->inspect(print_readably));
         // out.append(" ");
     }
     if (map.empty())
@@ -146,6 +222,27 @@ std::string HashMapValue::inspect()
         out += "}";
     }
     return out;
+}
+
+bool HashMapValue::operator==(Value *other)
+{
+    if(type() != other->type()){
+        return false;
+    }
+    if(size() != other->as_hash_map()->size()){
+        return false;
+    }
+    auto other_hash_map = other->as_hash_map();
+
+    for (auto pair: *this)
+    {
+        auto other_val = other_hash_map->get(pair.first);
+        if(!other_val || *other_val != pair.second)
+        {
+            return false;
+        }
+    }
+    return true;
 }
 
 void HashMapValue::set(Value *key, Value *val)
@@ -170,7 +267,7 @@ std::string SymbolValue::str()
     return symbol;
 }
 
-std::string SymbolValue::inspect()
+std::string SymbolValue::inspect(bool print_readably)
 {
     return str();
 }

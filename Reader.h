@@ -31,4 +31,5 @@ public:
     static Value *read_quote(Reader &reader);
     static HashMapValue *read_hash_map(Reader &reader);
     static Value *read_integer(Reader &reader);
+    static Value* read_string(Reader& reader);
 };
