@@ -6,6 +6,7 @@
 #include <cassert>
 #include <unordered_map>
 #include <functional>
+#include <iostream>
 
 class ListValue;
 class VectorValue;
@@ -17,6 +18,7 @@ class ExceptionValue;
 class TrueValue;
 class FalseValue;
 class NillValue;
+class ConsValue;
 
 class Value
 {
@@ -33,14 +35,17 @@ public:
         True,
         False,
         Nill,
+        Cons,
     };
     virtual ~Value() = default;
     virtual std::string inspect() = 0; // Defined in types.cpp
     virtual bool is_symbol() {return false; };
     virtual bool is_truthy() {return true; };
     virtual bool is_list() {return false; };
+    virtual bool is_cons() {return false;};
     virtual bool is_listy() {return false;}
     virtual bool is_integer() {return false;}
+    virtual bool is_nil() {return false;}
     virtual bool operator==(Value *) { return false; };
     virtual Type type() = 0;
     ListValue *as_list();
@@ -53,6 +58,7 @@ public:
     TrueValue *as_true();
     FalseValue *as_false();
     NillValue *as_nill();
+    ConsValue *as_cons();
 };
 
 struct HashMapHash
@@ -85,10 +91,25 @@ public:
     auto end() { return listValue.end(); }
     bool is_empty() { return listValue.size() == 0; }
     size_t size() { return listValue.size(); }
+    virtual bool is_truthy() override {return listValue.size(); }
+    virtual bool is_nil() override {
+        return listValue.size() == 0;};
     Value *at(size_t index) { return listValue[index]; }
 
 protected:
     std::vector<Value *> listValue;
+};
+
+class ConsValue : public Value
+{
+    public:
+        ConsValue(Value* car, Value* cdr) : m_car(car), m_cdr(cdr) {};
+        std::string inspect() {return "(" + m_car->inspect() + " . " + m_cdr->inspect() + ")"; };
+        virtual Type type() { return Type::Cons; }
+        virtual bool is_cons() override {return true; }
+
+        Value* m_car;
+        Value* m_cdr;
 };
 
 class VectorValue : public ListValue
@@ -120,8 +141,10 @@ class SymbolValue : public Value
 {
 public:
     explicit SymbolValue(std::string symbol);
-
-    bool matches(char *nstr) {return symbol == nstr;}
+    bool matches(char *nstr) {
+        std::transform(symbol.begin(), symbol.end(), symbol.begin(), ::tolower);
+        return symbol == nstr;
+        }
 
     std::string str();
     std::string inspect() override;
@@ -190,7 +213,10 @@ private:
 class TrueValue : public Value {
     public:
         virtual Type type() override { return Type::True; }
-        virtual std::string inspect() override { return "true"; }
+        virtual std::string inspect() override { return "T"; }
+        bool operator==(Value *other) override {
+        return other->inspect() == "T";
+    }
 };
 
 class FalseValue : public Value {
@@ -198,12 +224,20 @@ class FalseValue : public Value {
         virtual Type type() override { return Type::False; }
         virtual std::string inspect() override { return "false"; }
         virtual bool is_truthy() override {return false; };
+        virtual bool is_nil() override {return true;};
+        bool operator==(Value *other) override {
+        return other->inspect() == "false";
+    }
 };
 
 class NillValue : public Value {
     public:
         virtual Type type() override { return Type::Nill; }
-        virtual std::string inspect() override { return "nill"; }
+        virtual std::string inspect() override { return "nil"; }
         virtual bool is_truthy() override {return false; };
+        virtual bool is_nil() override {return true;};
+        bool operator==(Value *other) override {
+        return other->inspect() == "nil";
+    }
 
 };

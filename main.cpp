@@ -76,7 +76,8 @@ Value *EVAL(Value *input, Env &env)
         auto first = list->at(0);
         if(first->is_symbol()){
             auto special = first->as_symbol();
-            if(special->matches("def!")) {
+
+            if(special->matches("set")) {
                 auto key = list->at(1)->as_symbol();
                 auto val = EVAL(list->at(2), env);
                 env.set(key, val);
@@ -104,11 +105,11 @@ Value *EVAL(Value *input, Env &env)
                 auto false_expr = list->size() >= 4 ? list->at(3) : new NillValue;
                 if (EVAL(condition, env)->is_truthy()) return EVAL(true_expr, env);
                 else return EVAL(false_expr, env);
-            } else if(special->matches("fn*")) 
+            } else if(special->matches("define")) 
             {
                 auto env_ptr = &env;
-                auto binds = list->at(1)->as_list();
-                auto body = list->at(2);
+                auto binds = list->at(2)->as_list();
+                auto body = list->at(3);
                 auto closure = [env_ptr, binds, body](size_t argc, Value **args) {
                     auto exprs = new ListValue {};
                     for(size_t i=0; i<argc; i++){
@@ -118,7 +119,90 @@ Value *EVAL(Value *input, Env &env)
                     return EVAL(body, *fn_env);
                     // return new NillValue {};
                 };
-                return new FnValue {closure};
+                auto fn = new FnValue {closure};
+                auto key = list->at(1)->as_symbol();
+                env.set(key, fn);
+                return fn;
+            } else if(special->matches("eval")){
+                auto eval_cont = EVAL(list->at(1), env);
+                return EVAL(eval_cont, env);
+            } else if(special->matches("quote")){
+                auto quote_cont = list->at(1);
+                return quote_cont;
+            } else if(special->matches("cons")){
+                auto car = EVAL(list->at(1), env);
+                auto cdr = EVAL(list->at(2), env);
+                return new ConsValue(car, cdr);
+            } else if(special->matches("car")) {
+                auto cons = EVAL(list->at(1), env)->as_cons();
+                return cons->m_car;
+            } else if(special->matches("cdr")) {
+                auto cons = EVAL(list->at(1), env)->as_cons();
+                return cons->m_cdr;
+            } else if(special->matches("number?")) {
+                bool is_num = EVAL(list->at(1), env)->is_integer();
+                if(is_num){
+                    return new TrueValue();
+                } else {
+                    return new NillValue();
+                }
+            } else if(special->matches("symbol?")) {
+                bool is_symb = EVAL(list->at(1), env)->is_symbol();
+                if(is_symb){
+                    return new TrueValue();
+                } else {
+                    return new NillValue();
+                }
+            } else if(special->matches("list?")) {
+                auto cont = EVAL(list->at(1), env);
+                bool is_list = cont->is_list() | cont->is_cons();
+                ;
+                if(is_list){
+                    return new TrueValue();
+                } else {
+                    return new NillValue();
+                }
+            } else if(special->matches("nil?")) {
+                bool is_nil = EVAL(list->at(1), env)->is_nil();
+                if(is_nil){
+                    return new TrueValue();
+                } else {
+                    return new NillValue();
+                }
+            } else if(special->matches("and?")){
+                bool oper1 = EVAL(list->at(1), env)->is_truthy();
+                if(!oper1) {
+                    return new NillValue();
+                }
+                bool oper2 = EVAL(list->at(2), env)->is_truthy();
+                if(!oper2){
+                    return new NillValue();
+                }
+                return new TrueValue();
+            } else if(special->matches("or?")){
+                bool oper1 = EVAL(list->at(1), env)->is_truthy();
+                if(oper1) {
+                    return new TrueValue();
+                }
+                bool oper2 = EVAL(list->at(2), env)->is_truthy();
+                if(oper2){
+                    return new TrueValue();
+                }
+                return new NillValue();
+            } else if(special->matches("eq?")){
+                auto oper1 = EVAL(list->at(1), env);
+                auto oper2 = EVAL(list->at(2), env);
+                if(oper1->inspect() == oper2->inspect()){
+                    return new TrueValue();
+                } else {
+                    return new NillValue();
+                }
+            } else if(special->matches("cond")){
+                for(size_t i=1; i<list->size(); i+=2){
+                    auto cond_i = EVAL(list->at(i), env);
+                    if(cond_i->is_truthy()) return EVAL(list->at(i+1), env);
+                }
+                return new NillValue();
             }
         }
         auto eval_list = eval_ast(input, env)->as_list();

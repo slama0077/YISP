@@ -87,7 +87,7 @@ Value *Reader::read_form(Reader &reader)
     case '9':
         return read_integer(reader);
     default:
-        if(token == "true") {
+        if(token == "T") {
             reader.next();
             return new TrueValue {};
         } else if (token == "false") {

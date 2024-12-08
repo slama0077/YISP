@@ -1,0 +1,176 @@
+;; Arithmetic Operations
+
+(+ 1 2)
+;=>3
+
+(- 10 3)
+;=>7
+
+(* 2 3)
+;=>6
+
+(/ 10 2)
+;=>5
+
+;; Comparision Operations
+
+(= 3 3)
+;=>T
+
+(= 3 4)
+;=>()
+
+(< 2 3)
+;=>T
+
+(< 5 2)
+;=>()
+
+(> 5 2)
+;=>T
+
+(> 2 5)
+;=>()
+
+;; Logical Operations
+(AND? T T)
+;=>T
+
+(AND? T ())
+;=>()
+
+(AND? () T)
+;=>()
+
+(AND? () ())
+;=>()
+
+(OR? T ())
+;=>T
+
+(OR? () T)
+;=>T
+
+(OR? () ())
+;=>()
+
+(OR? T T)
+;=>T
+
+;; List Operations
+
+(CONS 1 2)
+;=>(1 . 2)
+
+(CONS 1 (CONS 2 (CONS 3 ())))
+;=>(1 . (2 . (3 . ())))
+
+(CAR (CONS 1 2))
+;=>1
+
+(CAR (CONS (CONS 1 2) 3))
+;=>(1 . 2)
+
+(CDR (CONS 1 2))
+;=>2
+
+(CDR (CONS (CONS 1 2) 3))
+;=>3
+
+(NUMBER? 5)
+;=>T
+
+(NUMBER? (QUOTE a))
+;=>()
+
+(SYMBOL? (QUOTE a))
+;=>T
+
+(SYMBOL? 5)
+;=>()
+
+(LIST? (QUOTE (1 2 3)))
+;=>T
+
+(LIST? (QUOTE a))
+;=>()
+
+(NIL? ())
+;=>T
+
+(NIL? (QUOTE (1 2 3) ))
+;=>()
+
+;; Conditional Operations
+
+(COND T 1)
+;=>1
+
+(COND () 1 T 2)
+;=>2
+
+(COND () 1 () 2 T 3)
+;=>3
+
+(COND () 1 () 2 () 3)
+;=>()
+
+;; Variable and Function Definitions
+(DEFINE square (x) (* x x))
+(square 4)
+;=>16
+
+(SET x 42)
+x
+;=>42
+
+(SET x 42)
+(SET x (+ x 1))
+x
+;=>43
+
+;; Evaluation and Quoting
+(QUOTE (+ 1 2))
+;=>(+ 1 2)
+
+(EVAL (QUOTE (+ 1 2)))
+;=>3
+
+;; Equality Tests
+(EQ? 1 1)
+;=>T
+
+(EQ? 1 2)
+;=>()
+
+(EQ? (QUOTE(a)) (QUOTE(a)))
+;=>T
+
+(EQ? (QUOTE(a)) (QUOTE(b)))
+;=>()
+
+;; Custom Function Calls
+(DEFINE double (x) (+ x x))
+(double 4)
+;=>8
+
+(DEFINE add-three (x y z) (+ x (+ y z)))
+(add-three 1 2 3)
+;=>6
+
+(DEFINE factorial (n) (COND (= n 0) 1 T (* n (factorial (- n 1)))))
+(factorial 5)
+;=>120
+
+;; Optional If Statement (if)
+(IF T 1 2)
+;=>1
+
+(IF () 1 2)
+;=>2
+
+(IF (= 1 1) 42 99)
+;=>42
+
+(IF (= 1 2) 42 99)
+;=>99

@@ -6,6 +6,10 @@ ListValue *Value::as_list()
     assert(type() == Type::List || type() == Type::Vector);
     return static_cast<ListValue *>(this);
 }
+ConsValue *Value::as_cons(){
+    assert(type() == Type::Cons);
+    return static_cast<ConsValue *>(this);
+}
 bool ListValue::operator==(Value *other) {
     if(type() != other->type()){
         return false;

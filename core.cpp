@@ -9,8 +9,8 @@ std::unordered_map<std::string, Function> build_namespace() {
     ns["-"] = subtract;
     ns["*"] = multiply;
     ns["/"] = divide;
-    ns["prn"] = prn;
-    ns["list"] = list;
+    ns["eval"] = prn;
+    ns["quote"] = list;
     ns["list?"] = list_q;
     ns["empty?"] = empty_q;
     ns["count"] = count;
@@ -117,7 +117,7 @@ Value *eq(size_t argc, Value **args){
     if(*a == b){
         return new TrueValue;
     }
-    return new FalseValue;
+    return new ListValue;
 
 }
 Value *lt(size_t argc, Value **args){
@@ -129,7 +129,7 @@ Value *lt(size_t argc, Value **args){
     if(a->as_integer()->to_long() < b->as_integer()->to_long()){
         return new TrueValue;
     }
-    return new FalseValue;
+    return new ListValue;
 }
 Value *lte(size_t argc, Value **args){
     assert(argc >= 2);
@@ -140,7 +140,7 @@ Value *lte(size_t argc, Value **args){
     if(a->as_integer()->to_long() <= b->as_integer()->to_long()){
         return new TrueValue;
     }
-    return new FalseValue;
+    return new ListValue;
 }
 Value *gt(size_t argc, Value **args){
     assert(argc >= 2);
@@ -151,7 +151,7 @@ Value *gt(size_t argc, Value **args){
     if(a->as_integer()->to_long() > b->as_integer()->to_long()){
         return new TrueValue;
     }
-    return new FalseValue;
+    return new ListValue;
 }
 Value *gte(size_t argc, Value **args){
     assert(argc >= 2);
@@ -162,5 +162,5 @@ Value *gte(size_t argc, Value **args){
     if(a->as_integer()->to_long() >= b->as_integer()->to_long()){
         return new TrueValue;
     }
-    return new FalseValue;
+    return new ListValue;
 }
