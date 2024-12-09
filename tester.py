@@ -1,4 +1,5 @@
 import subprocess
+import os
 
 def parse_test_case(input_lines, expected_line):
     """Parse a pair of input and expected output from the test case lines."""
@@ -10,8 +11,9 @@ def parse_test_case(input_lines, expected_line):
 def run_repl(input_str):
     """Function to send input to the REPL and get the output."""
     # print("Starting subprocess for main.exe...")
+    executable_name = "main.exe" if os.name == "nt" else "./main"
     process = subprocess.Popen(
-        ["./main.exe"],        # Path to main.exe
+        [executable_name],        # Path to main.exe
         stdin=subprocess.PIPE, # Allow us to send input to the REPL
         stdout=subprocess.PIPE, # Capture the output of the REPL
         stderr=subprocess.PIPE,

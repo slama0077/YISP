@@ -24,6 +24,12 @@ $(TARGET): $(OBJS)
 %.o: %.cpp
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
+ifeq ($(OS),Windows_NT)
+    CLEAN_CMD = del /q
+else
+    CLEAN_CMD = rm -f
+endif
+
 # Clean up build files
 clean:
-	rm -f $(OBJS) $(TARGET)
+	$(CLEAN_CMD) $(OBJS) $(TARGET)
